@@ -1,0 +1,19 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  universal:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test navigation and shortcut persistence
+        run: swift test
+      - name: Build and verify Intel + Apple Silicon
+        run: ./scripts/build-universal.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CatchMouse-universal
+          path: dist/CatchMouse-universal.zip
