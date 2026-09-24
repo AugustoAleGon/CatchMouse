@@ -8,6 +8,7 @@ for arch in arm64 x86_64; do
 done
 
 app="dist/CatchMouse.app"
+rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp Resources/Info.plist "$app/Contents/Info.plist"
 cp LICENSE "$app/Contents/Resources/LICENSE"
@@ -24,6 +25,5 @@ else
     codesign --force --sign - "$app"
 fi
 codesign --verify --deep --strict "$app"
-ditto -c -k --sequesterRsrc --keepParent "$app" dist/CatchMouse-universal.zip
-echo "Built $app and dist/CatchMouse-universal.zip"
 lipo -archs "$app/Contents/MacOS/CatchMouse"
+./scripts/package-release.sh

@@ -22,7 +22,29 @@ compiled Intel app; its source and artwork are not used by this version.
 - Shortcut conflict feedback and buttons to try moving the pointer immediately.
 - Native menu-bar controls, with no network service, account, or third-party dependency.
 
-## Build and install
+## Download and install
+
+**[Download CatchMouse for macOS](https://github.com/AugustoAleGon/CatchMouse/releases/latest/download/CatchMouse-universal.dmg)**
+or browse [all releases](https://github.com/AugustoAleGon/CatchMouse/releases).
+The universal DMG works on both Intel and Apple Silicon Macs running macOS 12 or
+later. You do not need to download this repository or install developer tools.
+
+1. Open `CatchMouse-universal.dmg`.
+2. Drag **CatchMouse** onto **Applications** in the disk image.
+3. Eject the disk image, quit any older CatchMouse, and open CatchMouse from Applications.
+4. Configure your display shortcuts. CatchMouse stays in the menu bar.
+
+The release is ad-hoc signed and **not notarized by Apple**. If macOS blocks the
+first launch because the developer cannot be verified, and you trust the download,
+try opening the installed app, then go to **System Settings → Privacy & Security →
+Open Anyway**. On macOS Monterey, use **System Preferences → Security & Privacy →
+General**. See [Apple's instructions](https://support.apple.com/en-us/102445).
+
+A ZIP of the same app and `SHA256SUMS.txt` are also available on each release.
+To verify the downloads, save all three release assets in one folder and run
+`shasum -a 256 -c SHA256SUMS.txt` from that folder.
+
+## Build from source
 
 You need Xcode or the Xcode Command Line Tools with **Swift 5.9 or later** and a
 macOS SDK. You can build both architectures from either an Intel or Apple Silicon Mac.
@@ -37,14 +59,16 @@ open dist/CatchMouse.app
 The script creates:
 
 - `dist/CatchMouse.app` — one universal app containing `arm64` and `x86_64` binaries.
+- `dist/CatchMouse-universal.dmg` — a disk image with the app and an Applications shortcut.
 - `dist/CatchMouse-universal.zip` — the app packaged for transfer.
+- `dist/SHA256SUMS.txt` — SHA-256 checksums for the DMG and ZIP.
 
 Drag the built app into Applications to install it. Quit the old CatchMouse before
 using this version so it does not compete for the same shortcuts. The new app uses
 its own preferences; old shortcuts are not imported.
 
-Builds use an ad-hoc signature by default. They are intended for local testing and
-are not Apple-notarized downloads. To distribute an app that passes Gatekeeper's
+Builds use an ad-hoc signature by default and are not Apple-notarized.
+To distribute an app that passes Gatekeeper's
 normal checks, follow the signing and notarization steps below.
 
 ## Use CatchMouse
@@ -112,10 +136,32 @@ can also open `Package.swift` in Xcode. Build output is ignored by Git.
 | `Tests/CatchMouseTests/` | Native hotkey registration, AppKit event dispatch, and shortcut recording tests |
 | `Resources/Info.plist` | New app identity and minimum macOS version |
 | `scripts/build-universal.sh` | Compile, combine, verify, sign, and package both architectures |
+| `scripts/package-release.sh` | Package an existing app as a DMG and ZIP and generate checksums |
 | `legacy/` | Original binary, excluded from the MIT license and new builds |
 
-GitHub Actions runs the tests, builds both architectures, verifies the app signature,
-and uploads the ZIP as a workflow artifact. It does not publish a release.
+GitHub Actions runs the tests, builds both architectures, verifies the app signature
+and DMG, and uploads the DMG, ZIP, and checksums as workflow artifacts.
+
+## Publish a release
+
+Set `CFBundleShortVersionString` in `Resources/Info.plist` to the release version
+and increment `CFBundleVersion`. Commit and push the changes, then push a matching
+version tag, for example:
+
+```sh
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+The **Publish macOS release** workflow checks that the tag matches the app version,
+runs the tests, builds the universal app, and publishes a GitHub release with the
+DMG, ZIP, checksums, and installation instructions. The download link above always
+points to the latest release. Releases use ad-hoc signing; Developer ID signing and
+notarization require your own Apple credentials, as described below.
+
+To retry a failed release, rerun its workflow or dispatch it with the existing tag
+as the ref (`gh workflow run release.yml --ref v2.0.0`). Publishing fails if the
+release already exists, so published assets are not silently replaced.
 
 Before a public release, test on physical Intel and Apple Silicon Macs with multiple
 displays: direct shortcuts, forward/backward cycling, mixed scaling, displays above
@@ -133,12 +179,14 @@ xcrun notarytool submit dist/CatchMouse-universal.zip --keychain-profile YOUR_PR
 xcrun stapler staple dist/CatchMouse.app
 xcrun stapler validate dist/CatchMouse.app
 spctl --assess --type execute --verbose dist/CatchMouse.app
-ditto -c -k --sequesterRsrc --keepParent dist/CatchMouse.app dist/CatchMouse-universal.zip
+./scripts/package-release.sh
 ```
 
 Configure `YOUR_PROFILE` with your own Apple notarization credentials first. Keep
 certificates and credentials out of the repository. After notarization succeeds,
-staple and repackage the app before attaching the ZIP to a GitHub release. See Apple's
+staple and repackage the app before attaching the DMG, ZIP, and regenerated checksums
+to a GitHub release. Update the installation and release notes to describe the signed
+release, and use these local artifacts instead of the ad-hoc release workflow. See Apple's
 [universal binary documentation](https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary)
 and [notarization guide](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
 

@@ -4,6 +4,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   universal:
     runs-on: macos-14
@@ -16,4 +19,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: CatchMouse-universal
-          path: dist/CatchMouse-universal.zip
+          path: |
+            dist/CatchMouse-universal.dmg
+            dist/CatchMouse-universal.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error

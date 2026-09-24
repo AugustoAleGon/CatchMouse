@@ -1,0 +1,18 @@
+Install CatchMouse
+
+Requires macOS 12 Monterey or later. The same app supports Intel and Apple Silicon.
+No repository download, Xcode, or other developer tools are required.
+
+1. Quit any older CatchMouse app that is running.
+2. Drag CatchMouse.app onto the Applications folder in this disk image.
+3. Eject the disk image and open CatchMouse from Applications.
+4. Set your display shortcuts in Settings. CatchMouse stays in the menu bar.
+
+The GitHub release is ad-hoc signed and is not notarized by Apple. If macOS blocks
+the first launch because the developer cannot be verified, and you trust this
+download, open System Settings > Privacy & Security and choose Open Anyway after
+trying to launch it. On macOS Monterey, use System Preferences > Security & Privacy
+> General. Confirm Open when prompted.
+
+Downloads and source: https://github.com/AugustoAleGon/CatchMouse
+Apple's instructions: https://support.apple.com/en-us/102445
